@@ -1,0 +1,59 @@
+name: CI — Lint & Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest flake8
+
+      - name: Lint with flake8
+        run: flake8 src/ serving/ monitoring/ pipelines/ --max-line-length=100
+
+      - name: Run unit tests
+        run: pytest tests/ -v
+
+      - name: Validate WoE encoder (smoke test)
+        run: |
+          python -c "
+          import numpy as np
+          import pandas as pd
+          from src.features.woe_encoder import WoEEncoder
+          X = pd.DataFrame({'age': np.random.randint(18, 70, 500), 'income': np.random.rand(500)*5000})
+          y = pd.Series(np.random.binomial(1, 0.1, 500))
+          enc = WoEEncoder()
+          X_woe = enc.fit_transform(X, y)
+          iv = enc.get_iv_summary()
+          print('WoE encoder OK:', iv.to_string(index=False))
+          "
+
+      - name: Validate PSI computation (smoke test)
+        run: |
+          python -c "
+          import numpy as np
+          from monitoring.drift_detector import compute_psi, interpret_psi
+          ref = np.random.beta(2, 8, 1000)
+          cur = np.random.beta(2, 8, 1000)
+          psi = compute_psi(ref, cur)
+          print(f'PSI smoke test OK: PSI={psi:.4f} — {interpret_psi(psi)}')
+          "

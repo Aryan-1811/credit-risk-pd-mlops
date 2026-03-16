@@ -1,0 +1,14 @@
+﻿venv/
+__pycache__/
+*.pyc
+.env
+mlruns/
+mlflow_runs/
+data/raw/
+data/processed/
+data/reference/
+*.csv
+*.parquet
+*.npy
+monitoring/reports/
+.DS_Store

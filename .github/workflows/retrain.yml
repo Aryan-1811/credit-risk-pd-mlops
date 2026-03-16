@@ -1,0 +1,54 @@
+name: Scheduled Model Retraining
+
+on:
+  # Run on the 1st of every month at 02:00 UTC
+  schedule:
+    - cron: "0 2 1 * *"
+
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+    inputs:
+      force_retrain:
+        description: "Force retraining regardless of drift"
+        required: false
+        default: "false"
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run drift check
+        id: drift
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+        run: |
+          python -c "
+          from pipelines.monitoring_pipeline import monitoring_pipeline
+          monitoring_pipeline()
+          "
+
+      - name: Run training pipeline
+        if: ${{ steps.drift.outputs.retrain == 'true' || github.event.inputs.force_retrain == 'true' }}
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+          DATA_PATH: data/raw/cs-training.csv
+        run: |
+          python -c "
+          from pipelines.training_pipeline import training_pipeline
+          training_pipeline()
+          "
+
+      - name: Notify on completion
+        if: always()
+        run: echo "Retraining pipeline completed with status ${{ job.status }}"
