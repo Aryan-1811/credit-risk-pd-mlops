@@ -1,6 +1,11 @@
 # Credit Risk PD Modelling — MLOps Pipeline
 **End-to-end Basel II/III-aligned Probability of Default model with full MLOps lifecycle**
 
+## 🚀 Live Demo
+**[https://credit-risk-pd-mlops.vercel.app](https://credit-risk-pd-mlops.vercel.app)**
+
+FastAPI backend: [https://pd-scorer-api.onrender.com/docs](https://pd-scorer-api.onrender.com/docs)
+
 ## Architecture
 
 ```
