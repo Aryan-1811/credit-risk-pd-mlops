@@ -125,6 +125,6 @@ Download **Give Me Some Credit** from [Kaggle](https://www.kaggle.com/c/GiveMeSo
 ## PSI Thresholds (credit industry standard)
 | PSI | Interpretation |
 |-----|---------------|
-| < 0.10 | Stable — no action |
-| 0.10 – 0.25 | Moderate drift — investigate |
-| > 0.25 | Major drift — retrain model |
+| < 0.10 | Stable - no action |
+| 0.10 – 0.25 | Moderate drift - investigate |
+| > 0.25 | Major drift - retrain model |
