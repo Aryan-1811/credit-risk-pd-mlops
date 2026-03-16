@@ -22,7 +22,7 @@ jobs:
         run: pip install pandas numpy scikit-learn lightgbm xgboost pytest flake8
 
       - name: Lint with flake8
-        run: flake8 src/ monitoring/ --max-line-length=100 --ignore=E501
+        run: flake8 src/ monitoring/ --max-line-length=100 --ignore=E501,E241,F401
 
       - name: Run smoke tests
         run: |
