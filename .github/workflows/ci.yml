@@ -1,0 +1,41 @@
+name: CI — Lint & Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pandas numpy scikit-learn lightgbm xgboost pytest flake8
+
+      - name: Lint with flake8
+        run: flake8 src/ monitoring/ --max-line-length=100 --ignore=E501
+
+      - name: Run smoke tests
+        run: |
+          python -c "
+          import numpy as np
+          import pandas as pd
+          from src.features.woe_encoder import WoEEncoder
+          X = pd.DataFrame({'age': np.random.randint(18, 70, 500), 'income': np.random.rand(500)*5000})
+          y = pd.Series(np.random.binomial(1, 0.1, 500))
+          enc = WoEEncoder()
+          X_woe = enc.fit_transform(X, y)
+          print('WoE encoder OK')
+          from monitoring.drift_detector import compute_psi, interpret_psi
+          psi = compute_psi(np.random.beta(2,8,500), np.random.beta(2,8,500))
+          print(f'PSI smoke test OK: {psi:.4f}')
+          "
